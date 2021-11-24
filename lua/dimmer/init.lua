@@ -1,3 +1,5 @@
+local log = require("dimmer.log")
+
 local M = {}
 
 local defaults = {
@@ -5,7 +7,7 @@ local defaults = {
 }
 
 local function create_hl_groups()
-  print("create_hl_groups -- TODO")
+  log.trace("create_hl_groups -- TODO")
 end
 
 local function create_augroup(events, ft, func)
@@ -16,7 +18,6 @@ local function create_augroup(events, ft, func)
     .. ft
     .. " "
     .. func
-  print(cmd)
   vim.cmd("augroup Dim" .. events[1])
   vim.cmd("autocmd!")
   vim.cmd(cmd)
@@ -24,11 +25,11 @@ local function create_augroup(events, ft, func)
 end
 
 function M.win_enter(win_id)
-  print("DIMMER win_enter - win_id: " .. win_id)
+  log.trace("DIMMER win_enter - win_id: " .. win_id)
 end
 
 function M.setup(opts)
-  print("DIMMER - setup")
+  log.trace("DIMMER - setup")
   opts = vim.tbl_deep_extend("force", {}, defaults, opts or {})
 
   create_hl_groups()
