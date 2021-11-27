@@ -1,44 +1,47 @@
-local log = require("dimmer.log")
+local config = require("dimmer.config")
 
 local M = {}
 
-local defaults = {
-  ft_ignore = nil,
-}
+_DimmerWindowIDs = _DimmerWindowIDs or {}
 
 local function create_hl_groups()
-  log.trace("create_hl_groups -- TODO")
+  require("dimmer.log").trace("create_hl_groups -- TODO")
 end
 
-local function create_augroup(events, ft, func)
-  ft = table.concat(ft or {}) ~= "" and ft or "*"
-  local cmd = "autocmd "
-    .. table.concat(events, ",")
-    .. " "
-    .. ft
-    .. " "
-    .. func
-  vim.cmd("augroup Dim" .. events[1])
-  vim.cmd("autocmd!")
-  vim.cmd(cmd)
-  vim.cmd("augroup END")
+
+local function augroup_prototype()
+  vim.cmd([[
+    augroup DimPrototype
+    au!
+    au FileType * call setbufvar('%', 'ft', &ft)
+    au WinEnter,VimEnter,FileType * call v:lua.require('dimmer').autocmd_prototype(getbufvar('%', 'ft'))
+    augroup END
+  ]])
 end
 
-function M.win_enter(win_id)
-  log.trace("DIMMER win_enter - win_id: " .. win_id)
+function M.autocmd_prototype(ft)
+  if config.values.ft_ignore[ft] then
+    -- TODO: not skip but actually undo the dimmer for this window
+    require("dimmer.log").trace("DIMMER autocmd_prototype - skipped")
+    return
+  end
+  local win_id = vim.api.nvim_get_current_win()
+  require("dimmer.log").trace("DIMMER autocmd_prototype - win: " .. win_id .. " ft: " .. ft)
 end
 
 function M.setup(opts)
   config.set_defaults(opts)
-  log.trace("DIMMER - setup")
-  log.trace("config: " .. vim.inspect(config.values))
+  require("dimmer.log").trace("DIMMER - setup")
+  require("dimmer.log").trace("config: " .. vim.inspect(config.values))
 
-  create_hl_groups()
-  create_augroup(
-    { "WinEnter", "VimEnter" },
-    opts.ft_ignore,
-    "call v:lua.require('dimmer').win_enter(win_getid())"
-  )
+  augroup_prototype()
+  -- create_hl_groups()
+  -- local call_dimmer = "call v:lua.require('dimmer')."
+  -- create_augroup({ "FileType" }, call_dimmer .. "new_window(win_getid())")
+  -- create_augroup(
+  --   { "WinEnter", "VimEnter" },
+  --   call_dimmer .. "win_enter(win_getid(), &ft)"
+  -- )
 end
 
 return M
