@@ -1,9 +1,15 @@
-local log_levels = {"trace", "debug", "info", "warn", "error", "fatal"}
-
--- TODO: get log level from opts
+local config = require('dimmer.config')
+local log_levels = {
+  trace = "trace",
+  debug = "debug",
+  info = "info",
+  warn = "warn",
+  error = "error",
+  fatal = "fatal",
+}
 
 
 return require("plenary.log").new({
   plugin = "dimmer",
-  level = "trace",
+  level = log_levels[config.values.log_level],
 })
