@@ -1,4 +1,4 @@
-local config = require('dimmer.config')
+local config = require("dimmer.config")
 local log_levels = {
   trace = "trace",
   debug = "debug",
@@ -7,7 +7,6 @@ local log_levels = {
   error = "error",
   fatal = "fatal",
 }
-
 
 return require("plenary.log").new({
   plugin = "dimmer",
