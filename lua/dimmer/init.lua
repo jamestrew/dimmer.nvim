@@ -1,4 +1,3 @@
-local ui = require('dimmer.ui')
 local config = require("dimmer.config")
 
 local M = {}
