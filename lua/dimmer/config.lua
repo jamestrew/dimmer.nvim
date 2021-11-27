@@ -13,7 +13,7 @@ local defaults = {
 
 
 function config.set_defaults(opts)
-  config.values = vim.tbl_extend('force', opts or {}, defaults)
+  config.values = vim.tbl_extend('force', defaults, opts or {})
   config.values.ft_ignore = utils.set(config.values.ft_ignore)
 end
 
