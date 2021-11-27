@@ -18,4 +18,3 @@ function M.set(table)
 end
 
 return M
-

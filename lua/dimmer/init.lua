@@ -8,7 +8,6 @@ local function create_hl_groups()
   require("dimmer.log").trace("create_hl_groups -- TODO")
 end
 
-
 local function augroup_prototype()
   vim.cmd([[
     augroup DimPrototype
@@ -26,13 +25,26 @@ function M.autocmd_prototype(ft)
     return
   end
   local win_id = vim.api.nvim_get_current_win()
-  require("dimmer.log").trace("DIMMER autocmd_prototype - win: " .. win_id .. " ft: " .. ft)
+  require("dimmer.log").trace(
+    "DIMMER autocmd_prototype - win: " .. win_id .. " ft: " .. ft
+  )
 end
 
 function M.setup(opts)
   config.set_defaults(opts)
-  require("dimmer.log").trace("DIMMER - setup")
-  require("dimmer.log").trace("config: " .. vim.inspect(config.values))
+  vim.api.nvim_set_keymap(
+    "n",
+    "<leader>od",
+    ":lua require('dimmer.ui').create_overlay(vim.fn.win_getid())<CR>",
+    {}
+  )
+  vim.api.nvim_set_keymap(
+    "n",
+    "<leader>cd",
+    ":lua require('dimmer.ui').destroy_overlay(",
+    {}
+  )
+  require("dimmer.ui").setup_highlight()
 
   augroup_prototype()
   -- create_hl_groups()
