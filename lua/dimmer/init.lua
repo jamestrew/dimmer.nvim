@@ -29,8 +29,9 @@ function M.win_enter(win_id)
 end
 
 function M.setup(opts)
+  config.set_defaults(opts)
   log.trace("DIMMER - setup")
-  opts = vim.tbl_deep_extend("force", {}, defaults, opts or {})
+  log.trace("config: " .. vim.inspect(config.values))
 
   create_hl_groups()
   create_augroup(
