@@ -1,3 +1,4 @@
+local ui = require('dimmer.ui')
 local config = require("dimmer.config")
 
 local M = {}
@@ -31,8 +32,7 @@ end
 
 function M.setup(opts)
   config.set_defaults(opts)
-  require("dimmer.log").trace("DIMMER - setup")
-  require("dimmer.log").trace("config: " .. vim.inspect(config.values))
+  ui.setup_highlight()
 
   augroup_prototype()
   -- create_hl_groups()
