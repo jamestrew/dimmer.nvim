@@ -9,15 +9,7 @@ local winblend = "winblend"
 function M.setup_highlight()
   log.trace("setup_highlight")
   local dim_color = config.values.debug and "#FAAEAE" or "None"
-  require("dimmer.log").trace("setup_highlight - dim_color: " .. dim_color)
   vim.cmd("hi DimmerOverlay gui='nocombine' guibg=" .. dim_color)
-
-  local exists, _ = pcall(function()
-    return vim.api.nvim_get_hl_by_name("DimmerBrightnessPopup", false)
-  end)
-  if not exists then
-    vim.api.nvim_command("highlight link DimmerBrightnessPopup Number")
-  end
 end
 
 function M.win_config(win_id)
