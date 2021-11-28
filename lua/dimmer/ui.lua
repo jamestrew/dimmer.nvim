@@ -25,10 +25,22 @@ function M.win_config(win_id)
   }
 end
 
-local function dim_window(win_id)
-  vim.api.nvim_win_set_option(win_id, "winhighlight", "Normal:DimmerOverlay")
-  vim.api.nvim_win_set_option(win_id, winblend, config.values.opacity)
-  state.overlays[win_id].winblend = config.values.opacity
+---turn dimming on/off
+---@param win_id number
+---@param dim boolean
+local function set_window_dim(win_id, dim)
+  log.trace("set_window_dim: " .. dim and "on" or "off")
+  local opacity = dim and config.values.opacity or 100
+  local overlay = state.overlays[win_id]
+  if overlay then
+    vim.api.nvim_win_set_option(
+      overlay.overlay_id,
+      WINHIGHLIGHT,
+      "Normal:" .. HI_DIMMER
+    )
+    vim.api.nvim_win_set_option(overlay.overlay_id, WINBLEND, opacity)
+    state.overlays[win_id].winblend = opacity
+  end
 end
 
 function M.create_overlay(win_id)
@@ -36,9 +48,9 @@ function M.create_overlay(win_id)
   local window = {}
   window.config = M.win_config(win_id)
   window.buf_id = vim.api.nvim_create_buf(false, true)
-  window.win_id = vim.api.nvim_open_win(window.buf_id, false, window.config)
+  window.overlay_id = vim.api.nvim_open_win(window.buf_id, false, window.config)
   state.overlays[win_id] = window
-  dim_window(window.win_id)
+  set_window_dim(win_id, true)
 end
 
 function M.destroy_overlay(win_id)
@@ -47,21 +59,19 @@ function M.destroy_overlay(win_id)
   state.overlays[win_id] = nil
 end
 
-local function undim_window(win_id)
-  log.trace("undim_window")
-  local overlay = state.overlays[win_id]
-  if overlay then
-    vim.api.nvim_win_set_option(overlay.win_id, winblend, 100)
-  state.overlays[win_id].winblend = 100
+function M.undim_window_all()
+  log.trace("undim_window_all")
+  for win_id, _ in pairs(state.overlays) do
+    set_window_dim(win_id, false)
   end
 end
 
 local function dim_others(win_id)
   log.trace("dim_other -win_id: " .. win_id)
-  for overlay_id, _ in pairs(state.overlays) do
-    if vim.api.nvim_win_get_option(overlay_id, "diff") then
-    elseif overlay_id ~= win_id then
-      dim_window(overlay_id)
+  for alt_win_id, _ in pairs(state.overlays) do
+    if vim.api.nvim_win_get_option(alt_win_id, "diff") then
+    elseif alt_win_id ~= win_id then
+      set_window_dim(alt_win_id, true)
     end
   end
 end
@@ -77,7 +87,7 @@ function M.dim_windows()
     end
   end
 
-  undim_window(win_id)
+  set_window_dim(win_id, false)
   dim_others(win_id)
   if config.values.ft_ignore[ft] then
     -- TODO: un-dim windows
