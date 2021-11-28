@@ -76,8 +76,8 @@ local function dim_others(win_id)
   end
 end
 
-function M.dim_windows()
-  log.trace("dim_windws")
+function M.win_enter()
+  log.trace("win_enter")
   local ft = vim.api.nvim_buf_get_var(0, "ft")
   local win_id = vim.api.nvim_get_current_win()
 

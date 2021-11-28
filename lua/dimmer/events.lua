@@ -6,7 +6,7 @@ function M.init_augroup()
     augroup DimPrototype
     au!
     au FileType * call setbufvar('%', 'ft', &ft)
-    au WinEnter,VimEnter,FileType * call v:lua.require('dimmer.events').autocmd_prototype(getbufvar('%', 'ft'))
+    au WinEnter,VimEnter,FileType * call v:lua.require('dimmer.ui').win_enter()
     augroup END
   ]])
 end
