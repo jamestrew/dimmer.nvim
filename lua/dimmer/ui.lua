@@ -4,12 +4,14 @@ local log = require("dimmer.log")
 local state = require("dimmer").get_state()
 
 local M = {}
-local winblend = "winblend"
+local WINBLEND = "winblend"
+local WINHIGHLIGHT = "winhighlight"
+local HI_DIMMER = "DimmerOverlay"
 
 function M.setup_highlight()
   log.trace("setup_highlight")
   local dim_color = config.values.debug and "#FAAEAE" or "None"
-  vim.cmd("hi DimmerOverlay gui='nocombine' guibg=" .. dim_color)
+  vim.cmd("hi " .. HI_DIMMER .. " gui='nocombine' guibg=" .. dim_color)
 end
 
 function M.win_config(win_id)
@@ -53,11 +55,11 @@ function M.create_overlay(win_id)
   set_window_dim(win_id, true)
 end
 
-function M.destroy_overlay(win_id)
-  log.trace("destroy_overlay")
-  vim.api.nvim_win_close(win_id, false)
-  state.overlays[win_id] = nil
-end
+-- function M.destroy_overlay(win_id)
+--   log.trace("destroy_overlay")
+--   vim.api.nvim_win_close(win_id, false)
+--   state.overlays[win_id] = nil
+-- end
 
 function M.undim_window_all()
   log.trace("undim_window_all")
@@ -93,14 +95,7 @@ function M.win_enter()
     -- TODO: un-dim windows
     return
   end
+  log.trace(vim.inspect(state.overlays))
 end
 
 return M
-
---[[
-:hi DimmerOverlay
-DimmerOverlay  xxx gui=nocombine guibg=None
-
-:hi ShadeOverlay
-ShadeOverlay   xxx gui=nocombine guibg=None
-]]
