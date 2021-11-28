@@ -1,6 +1,8 @@
 local config = require("dimmer.config")
 
 local M = {}
+local state = {}
+state.overlays = {}
 
 function M.setup(opts)
   config.set_defaults(opts)
@@ -16,8 +18,14 @@ function M.setup(opts)
     ":lua require('dimmer.ui').destroy_overlay(",
     {}
   )
+
   require("dimmer.events").init_augroup()
-  require("dimmer.ui").setup_highlight()
+  require("dimmer.ui").setup_highlight() -- TODO: standardize to init
+  require("dimmer.log").trace("-- DIMMER INIT --")
+end
+
+function M.get_state()
+  return state
 end
 
 return M
