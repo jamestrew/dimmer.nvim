@@ -54,12 +54,6 @@ function M.create_overlay(win_id)
   set_window_dim(win_id, true)
 end
 
--- function M.destroy_overlay(win_id)
---   log.trace("destroy_overlay")
---   vim.api.nvim_win_close(win_id, false)
---   state.overlays[win_id] = nil
--- end
-
 function M.undim_window_all()
   log.trace("undim_window_all")
   for win_id, _ in pairs(state.overlays) do
@@ -71,7 +65,7 @@ local function dim_others(win_id)
   log.trace("dim_other -win_id: " .. win_id)
   for alt_win_id, _ in pairs(state.overlays) do
     local bufnr = vim.api.nvim_win_get_buf(alt_win_id)
-    local ft = vim.api.nvim_buf_get_var(bufnr, 'ft')
+    local ft = vim.api.nvim_buf_get_var(bufnr, "ft")
     if vim.api.nvim_win_get_option(alt_win_id, "diff") then
     elseif config.values.ft_ignore[ft] then
     elseif alt_win_id ~= win_id then
@@ -93,6 +87,18 @@ function M.win_enter()
   set_window_dim(win_id, false)
   dim_others(win_id)
   log.trace(vim.inspect(state.overlays))
+end
+
+function M.win_close()
+  local win_id = vim.api.nvim_get_current_win()
+  local overlay = state.overlays[win_id]
+  if overlay == nil then
+    log.trace("win_close - no overlay win_id: " .. win_id)
+  else
+    vim.api.nvim_win_close(overlay.winid, false)
+    log.trace("win_close - overlay closed win_id: " .. win_id)
+    state.overlays[win_id] = nil
+  end
 end
 
 return M
