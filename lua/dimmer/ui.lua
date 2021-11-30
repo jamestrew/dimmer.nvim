@@ -31,7 +31,7 @@ end
 ---@param win_id number
 ---@param dim boolean
 local function set_window_dim(win_id, dim)
-  log.trace("set_window_dim: " .. dim and "on" or "off")
+  log.trace("set_window_dim: " .. (dim and "on" or "off"))
   local opacity = dim and config.values.opacity or 100
   local overlay = state.overlays[win_id]
   if overlay then
@@ -71,7 +71,10 @@ end
 local function dim_others(win_id)
   log.trace("dim_other -win_id: " .. win_id)
   for alt_win_id, _ in pairs(state.overlays) do
+    local bufnr = vim.api.nvim_win_get_buf(alt_win_id)
+    local ft = vim.api.nvim_buf_get_var(bufnr, 'ft')
     if vim.api.nvim_win_get_option(alt_win_id, "diff") then
+    elseif config.values.ft_ignore[ft] then
     elseif alt_win_id ~= win_id then
       set_window_dim(alt_win_id, true)
     end
@@ -80,7 +83,6 @@ end
 
 function M.win_enter()
   log.trace("win_enter")
-  local ft = vim.api.nvim_buf_get_var(0, "ft")
   local win_id = vim.api.nvim_get_current_win()
 
   if not state.overlays[win_id] then
@@ -91,10 +93,7 @@ function M.win_enter()
 
   set_window_dim(win_id, false)
   dim_others(win_id)
-  if config.values.ft_ignore[ft] then
-    -- TODO: un-dim windows
-    return
-  end
+  -- TODO: handle ft
   log.trace(vim.inspect(state.overlays))
 end
 

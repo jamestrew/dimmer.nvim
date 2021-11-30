@@ -15,7 +15,7 @@ function M.setup(opts)
   vim.api.nvim_set_keymap(
     "n",
     "<leader>cd",
-    ":lua require('dimmer.ui').destroy_overlay(",
+    ":lua require('dimmer.ui').undim_window_all()<CR>",
     {}
   )
 
