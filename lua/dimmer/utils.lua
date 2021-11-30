@@ -1,6 +1,6 @@
 local M = {}
 
-function M.table_find(haystack, needle)
+function M.list_find(haystack, needle)
   for _, val in ipairs(haystack) do
     if val == needle then
       return true
