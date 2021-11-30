@@ -1,4 +1,5 @@
-local config = require("dimmer.config")
+local state = require("dimmer").get_state()
+local ui = require("dimmer.ui")
 local M = {}
 
 function M.init_augroup()
@@ -6,21 +7,17 @@ function M.init_augroup()
     augroup DimPrototype
     au!
     au FileType * call setbufvar('%', 'ft', &ft)
-    au WinEnter,VimEnter,FileType * call v:lua.require('dimmer.ui').win_enter()
+    au WinEnter,VimEnter,FileType * call v:lua.require('dimmer.events').handle_event('win_enter')
     augroup END
   ]])
 end
 
-function M.autocmd_prototype(ft)
-  if config.values.ft_ignore[ft] then
-    -- TODO: not skip but actually undo the dimmer for this window
-    require("dimmer.log").trace("DIMMER autocmd_prototype - skipped")
-    return
+function M.handle_event(event, ...)
+  if state.active then
+    if event == 'win_enter' then
+      ui.win_enter()
+    end
   end
-  local win_id = vim.api.nvim_get_current_win()
-  require("dimmer.log").trace(
-    "DIMMER autocmd_prototype - win: " .. win_id .. " ft: " .. ft
-  )
 end
 
 return M
