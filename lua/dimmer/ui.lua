@@ -86,7 +86,6 @@ function M.win_enter()
 
   set_window_dim(win_id, false)
   dim_others(win_id)
-  log.trace(vim.inspect(state.overlays))
 end
 
 function M.win_close()
@@ -95,7 +94,7 @@ function M.win_close()
   if overlay == nil then
     log.trace("win_close - no overlay win_id: " .. win_id)
   else
-    vim.api.nvim_win_close(overlay.winid, false)
+    vim.api.nvim_win_close(overlay.overlay_id, false)
     log.trace("win_close - overlay closed win_id: " .. win_id)
     state.overlays[win_id] = nil
   end
