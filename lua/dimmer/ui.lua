@@ -1,4 +1,3 @@
-local utils = require("dimmer.utils")
 local config = require("dimmer.config")
 local log = require("dimmer.log")
 local state = require("dimmer").get_state()
@@ -8,8 +7,8 @@ local WINBLEND = "winblend"
 local WINHIGHLIGHT = "winhighlight"
 local HI_DIMMER = "DimmerOverlay"
 
-function M.setup_highlight()
-  log.trace("setup_highlight")
+function M.init_highlight()
+  log.trace("init_highlight")
   local dim_color = config.values.debug and "#FAAEAE" or "None"
   vim.cmd("hi " .. HI_DIMMER .. " gui='nocombine' guibg=" .. dim_color)
 end
@@ -46,7 +45,7 @@ local function set_window_dim(win_id, dim)
 end
 
 function M.create_overlay(win_id)
-  log.trace("create_overlay")
+  log.trace("create_overlay -win_id: " .. win_id)
   local window = {}
   window.config = M.win_config(win_id)
   window.buf_id = vim.api.nvim_create_buf(false, true)
@@ -93,7 +92,6 @@ function M.win_enter()
 
   set_window_dim(win_id, false)
   dim_others(win_id)
-  -- TODO: handle ft
   log.trace(vim.inspect(state.overlays))
 end
 
