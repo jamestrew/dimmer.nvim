@@ -57,25 +57,6 @@ local function dim_others(win_id)
   end
 end
 
-function M.init_highlight()
-  log.trace("init_highlight")
-  local dim_color = config.values.debug and "#FAAEAE" or config.values.dim_color
-  vim.cmd("hi " .. HI_DIMMER .. " gui='nocombine' guibg=" .. dim_color)
-end
-
-function M.win_config(win_id)
-  local win_info = vim.fn.getwininfo(win_id)[1]
-  return {
-    relative = "editor",
-    style = "minimal",
-    focusable = false,
-    row = win_info.winrow - 1,
-    col = win_info.wincol - 1,
-    width = win_info.width,
-    height = win_info.height,
-  }
-end
-
 local function create_overlay(win_id)
   -- TODO: add and win_id exists check below
   if state.overlays[win_id] then
@@ -107,6 +88,25 @@ local function get_overlayed_win_id(overlay_id)
     end
   end
   return -1
+end
+
+function M.init_highlight()
+  log.trace("init_highlight")
+  local dim_color = config.values.debug and "#FAAEAE" or config.values.dim_color
+  vim.cmd("hi " .. HI_DIMMER .. " gui='nocombine' guibg=" .. dim_color)
+end
+
+function M.win_config(win_id)
+  local win_info = vim.fn.getwininfo(win_id)[1]
+  return {
+    relative = "editor",
+    style = "minimal",
+    focusable = false,
+    row = win_info.winrow - 1,
+    col = win_info.wincol - 1,
+    width = win_info.width,
+    height = win_info.height,
+  }
 end
 
 function M.undim_window_all()
