@@ -76,14 +76,37 @@ function M.win_config(win_id)
   }
 end
 
-function M.create_overlay(win_id)
-  log.trace("create_overlay -win_id: " .. win_id)
-  local window = {}
-  window.config = M.win_config(win_id)
-  window.buf_id = vim.api.nvim_create_buf(false, true)
-  window.overlay_id = vim.api.nvim_open_win(window.buf_id, false, window.config)
-  state.overlays[win_id] = window
-  set_window_dim(win_id, true)
+local function create_overlay(win_id)
+  -- TODO: add and win_id exists check below
+  if state.overlays[win_id] then
+    return
+  end
+
+  if vim.api.nvim_win_get_config(win_id)["relative"] == "" then
+    local window = {}
+    window.config = M.win_config(win_id)
+    window.buf_id = vim.api.nvim_create_buf(false, true)
+    window.overlay_id = vim.api.nvim_open_win(
+      window.buf_id,
+      false,
+      window.config
+    )
+
+    log.trace(
+      "create_overlay win_id: " .. win_id .. "overlay_id: " .. window.overlay_id
+    )
+    state.overlays[win_id] = window
+    set_window_dim(win_id, true)
+  end
+end
+
+local function get_overlayed_win_id(overlay_id)
+  for win_id, window in pairs(state.overlays) do
+    if window.overlay_id == overlay_id then
+      return win_id
+    end
+  end
+  return -1
 end
 
 function M.undim_window_all()
@@ -97,24 +120,29 @@ function M.win_enter()
   log.trace("win_enter")
   local win_id = vim.api.nvim_get_current_win()
 
-  if not state.overlays[win_id] then
-    if vim.api.nvim_win_get_config(win_id)["relative"] == "" then
-      M.create_overlay(win_id)
-    end
-  end
-
+  create_overlay(win_id)
   set_window_dim(win_id, false)
   dim_others(win_id)
 end
 
-function M.win_close()
-  local win_id = vim.api.nvim_get_current_win()
+function M.win_close(win_id)
+  win_id = tonumber(win_id)
   local overlay = state.overlays[win_id]
   if overlay == nil then
     log.trace("win_close - no overlay win_id: " .. win_id)
+    -- TODO: need to tweak create_overlay
+    -- win_id is deleted by nvim on <C-w><C-o>
+    -- need to recreate the overlay
+
+    create_overlay(get_overlayed_win_id(win_id))
   else
     vim.api.nvim_win_close(overlay.overlay_id, false)
-    log.trace("win_close - overlay closed win_id: " .. win_id)
+    log.trace(
+      "win_close - overlay closed win_id: "
+        .. win_id
+        .. "overlay_id: "
+        .. overlay.overlay_id
+    )
     state.overlays[win_id] = nil
   end
 end
