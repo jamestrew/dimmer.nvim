@@ -21,7 +21,7 @@ local function set_window_dim(win_id, dim)
       "Normal:" .. HI_DIMMER
     )
     vim.api.nvim_win_set_option(overlay.overlay_id, WINBLEND, opacity)
-    state.overlays[win_id].winblend = opacity
+    state.overlays[win_id].winblend = dim and opacity or 0
   end
 end
 
