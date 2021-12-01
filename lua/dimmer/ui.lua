@@ -29,16 +29,18 @@ local function valid_window(win_id, alt_win_id)
   local bufnr_ok, bufnr = pcall(vim.api.nvim_win_get_buf, alt_win_id)
   if bufnr_ok then
     local ft_ok, ft = pcall(vim.api.nvim_buf_get_var, bufnr, "ft")
-    if not ft_ok then
-      return false, "ft not set"
-    else
-      if vim.api.nvim_win_get_option(alt_win_id, "diff") then
-      elseif config.values.ft_ignore[ft] then
-      elseif alt_win_id ~= win_id then
-        return true, ""
+    if ft_ok then
+      if
+        not vim.api.nvim_win_get_option(alt_win_id, "diff")
+        and not config.values.ft_ignore[ft]
+        and alt_win_id ~= win_id
+      then
+        return true, "dimming"
       else
-        return true, "what?"
+        return false, "skipping"
       end
+    else
+      return false, "ft not set"
     end
   else
     return false, "bufnr does not exist"
@@ -47,13 +49,11 @@ end
 
 local function dim_others(win_id)
   for alt_win_id, _ in pairs(state.overlays) do
-    local valid, error_msg = valid_window(win_id, alt_win_id)
+    local valid, msg = valid_window(win_id, alt_win_id)
     if valid then
       set_window_dim(alt_win_id, true)
-      log.trace("dim_others dimming win_id: " .. alt_win_id)
-    else
-      log.trace("dim_others " .. error_msg .. " - win_id: " .. alt_win_id)
     end
+    log.trace("dim_others win_id: " .. alt_win_id .. " msg: " .. tostring(msg))
   end
 end
 
