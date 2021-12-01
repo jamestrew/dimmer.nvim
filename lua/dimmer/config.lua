@@ -8,6 +8,7 @@ config.values = _DimmerConfigurationValues
 local defaults = {
   -- TODO: probably want to add nvim-tree, nerdtree, chadtree..
   opacity = 50,
+  dim_color = "None",
   ft_ignore = { "netrw", "Outline", "undotree" },
   log_level = "error",
   debug = false,

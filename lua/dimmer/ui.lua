@@ -7,9 +7,59 @@ local WINBLEND = "winblend"
 local WINHIGHLIGHT = "winhighlight"
 local HI_DIMMER = "DimmerOverlay"
 
+---turn dimming on/off
+---@param win_id number
+---@param dim boolean
+local function set_window_dim(win_id, dim)
+  log.trace("set_window_dim: " .. (dim and "on" or "off"))
+  local opacity = dim and (100 - config.values.opacity) or 100
+  local overlay = state.overlays[win_id]
+  if overlay then
+    vim.api.nvim_win_set_option(
+      overlay.overlay_id,
+      WINHIGHLIGHT,
+      "Normal:" .. HI_DIMMER
+    )
+    vim.api.nvim_win_set_option(overlay.overlay_id, WINBLEND, opacity)
+    state.overlays[win_id].winblend = opacity
+  end
+end
+
+local function valid_window(win_id, alt_win_id)
+  local bufnr_ok, bufnr = pcall(vim.api.nvim_win_get_buf, alt_win_id)
+  if bufnr_ok then
+    local ft_ok, ft = pcall(vim.api.nvim_buf_get_var, bufnr, "ft")
+    if not ft_ok then
+      return false, "ft not set"
+    else
+      if vim.api.nvim_win_get_option(alt_win_id, "diff") then
+      elseif config.values.ft_ignore[ft] then
+      elseif alt_win_id ~= win_id then
+        return true, ""
+      else
+        return true, "what?"
+      end
+    end
+  else
+    return false, "bufnr does not exist"
+  end
+end
+
+local function dim_others(win_id)
+  for alt_win_id, _ in pairs(state.overlays) do
+    local valid, error_msg = valid_window(win_id, alt_win_id)
+    if valid then
+      set_window_dim(alt_win_id, true)
+      log.trace("dim_others dimming win_id: " .. alt_win_id)
+    else
+      log.trace("dim_others " .. error_msg .. " - win_id: " .. alt_win_id)
+    end
+  end
+end
+
 function M.init_highlight()
   log.trace("init_highlight")
-  local dim_color = config.values.debug and "#FAAEAE" or "None"
+  local dim_color = config.values.debug and "#FAAEAE" or config.values.dim_color
   vim.cmd("hi " .. HI_DIMMER .. " gui='nocombine' guibg=" .. dim_color)
 end
 
@@ -26,24 +76,6 @@ function M.win_config(win_id)
   }
 end
 
----turn dimming on/off
----@param win_id number
----@param dim boolean
-local function set_window_dim(win_id, dim)
-  log.trace("set_window_dim: " .. (dim and "on" or "off"))
-  local opacity = dim and config.values.opacity or 100
-  local overlay = state.overlays[win_id]
-  if overlay then
-    vim.api.nvim_win_set_option(
-      overlay.overlay_id,
-      WINHIGHLIGHT,
-      "Normal:" .. HI_DIMMER
-    )
-    vim.api.nvim_win_set_option(overlay.overlay_id, WINBLEND, opacity)
-    state.overlays[win_id].winblend = opacity
-  end
-end
-
 function M.create_overlay(win_id)
   log.trace("create_overlay -win_id: " .. win_id)
   local window = {}
@@ -58,19 +90,6 @@ function M.undim_window_all()
   log.trace("undim_window_all")
   for win_id, _ in pairs(state.overlays) do
     set_window_dim(win_id, false)
-  end
-end
-
-local function dim_others(win_id)
-  log.trace("dim_other -win_id: " .. win_id)
-  for alt_win_id, _ in pairs(state.overlays) do
-    local bufnr = vim.api.nvim_win_get_buf(alt_win_id)
-    local ft = vim.api.nvim_buf_get_var(bufnr, "ft")
-    if vim.api.nvim_win_get_option(alt_win_id, "diff") then
-    elseif config.values.ft_ignore[ft] then
-    elseif alt_win_id ~= win_id then
-      set_window_dim(alt_win_id, true)
-    end
   end
 end
 
