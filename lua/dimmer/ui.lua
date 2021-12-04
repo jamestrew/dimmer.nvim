@@ -57,9 +57,17 @@ local function dim_others(win_id)
   end
 end
 
+local function window_exists(win_id)
+  for _, windows in ipairs(vim.fn.getwininfo()) do
+    if windows.winid == win_id then
+      return true
+    end
+  end
+  return false
+end
+
 local function create_overlay(win_id)
-  -- TODO: add and win_id exists check below
-  if state.overlays[win_id] then
+  if state.overlays[win_id] and window_exists(win_id) then
     return
   end
 
@@ -130,11 +138,10 @@ function M.win_close(win_id)
   local overlay = state.overlays[win_id]
   if overlay == nil then
     log.trace("win_close - no overlay win_id: " .. win_id)
-    -- TODO: need to tweak create_overlay
-    -- win_id is deleted by nvim on <C-w><C-o>
-    -- need to recreate the overlay
-
-    create_overlay(get_overlayed_win_id(win_id))
+    local overlayed_id = get_overlayed_win_id(win_id)
+    if overlayed_id ~= -1 then
+      create_overlay(overlayed_id)
+    end
   else
     vim.api.nvim_win_close(overlay.overlay_id, false)
     log.trace(
