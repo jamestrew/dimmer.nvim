@@ -2,7 +2,7 @@ local state = require("dimmer").get_state()
 local ui = require("dimmer.ui")
 local M = {}
 
-function M.init_augroup()
+local function init_augroup()
   vim.cmd([[
     augroup DimPrototype
     au!
@@ -11,6 +11,22 @@ function M.init_augroup()
     au WinClosed * call v:lua.require'dimmer.events'.handle_event('win_close', expand('<afile>'))
     augroup END
   ]])
+end
+
+local function redraw(_, win_id, _, _, _)
+  local overlay = state.overlays[win_id]
+  if not overlay then
+    return
+  end
+  ui.win_resize(win_id)
+end
+
+
+function M.init_events()
+  init_augroup()
+
+  local dimmer_nsid = vim.api.nvim_create_namespace("dimmer")
+  vim.api.nvim_set_decoration_provider(dimmer_nsid, { on_win = redraw })
 end
 
 function M.handle_event(event, ...)
