@@ -7,7 +7,7 @@ state.active = true
 
 function M.setup(opts)
   config.set_defaults(opts)
-  require("dimmer.events").init_augroup()
+  require("dimmer.events").init_events()
   require("dimmer.ui").init_highlight()
   require("dimmer.log").trace("-- DIMMER INIT --")
 end

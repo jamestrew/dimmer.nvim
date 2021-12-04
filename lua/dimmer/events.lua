@@ -2,7 +2,7 @@ local state = require("dimmer").get_state()
 local ui = require("dimmer.ui")
 local M = {}
 
-function M.init_augroup()
+local function init_augroup()
   vim.cmd([[
     augroup DimPrototype
     au!
