@@ -154,4 +154,14 @@ function M.win_close(win_id)
   end
 end
 
+function M.win_resize(win_id)
+  log.trace("win_resize - win_id: " .. win_id)
+  local overlay = state.overlays[win_id]
+  local window = {}
+  window.config = win_config(win_id)
+
+  state.overlays[win_id] = vim.tbl_extend("force", window, overlay)
+  vim.api.nvim_win_set_config(overlay.overlay_id, window.config)
+end
+
 return M

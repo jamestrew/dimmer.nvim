@@ -13,6 +13,22 @@ local function init_augroup()
   ]])
 end
 
+local function redraw(_, win_id, _, _, _)
+  local overlay = state.overlays[win_id]
+  if not overlay then
+    return
+  end
+  ui.win_resize(win_id)
+end
+
+
+function M.init_events()
+  init_augroup()
+
+  local dimmer_nsid = vim.api.nvim_create_namespace("dimmer")
+  vim.api.nvim_set_decoration_provider(dimmer_nsid, { on_win = redraw })
+end
+
 function M.handle_event(event, ...)
   -- really hate this shit
   -- wanna wrap this in a HOF or something
