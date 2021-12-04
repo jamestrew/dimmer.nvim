@@ -80,7 +80,7 @@ local function win_config(win_id)
 end
 
 local function create_overlay(win_id)
-  if state.overlays[win_id] and window_exists(win_id) then
+  if state.overlays[win_id] and not window_exists(win_id) then
     return
   end
 
@@ -142,6 +142,7 @@ function M.win_close(win_id)
     if overlayed_id ~= -1 then
       create_overlay(overlayed_id)
     end
+    set_window_dim(overlayed_id, false)
   else
     vim.api.nvim_win_close(overlay.overlay_id, false)
     log.trace(
