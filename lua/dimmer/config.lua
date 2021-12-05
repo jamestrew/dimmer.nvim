@@ -1,9 +1,7 @@
 local utils = require("dimmer.utils")
 
-_DimmerConfigurationValues = _DimmerConfigurationValues or {}
-
 local config = {}
-config.values = _DimmerConfigurationValues
+config.values = {}
 
 local defaults = {
   -- TODO: probably want to add nvim-tree, nerdtree, chadtree..

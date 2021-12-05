@@ -7,11 +7,10 @@ local WINBLEND = "winblend"
 local WINHIGHLIGHT = "winhighlight"
 local HI_DIMMER = "DimmerOverlay"
 
----turn dimming on/off
----@param win_id number
----@param dim boolean
 local function set_window_dim(win_id, dim)
-  log.trace("set_window_dim: " .. (dim and "on" or "off"))
+  log.trace(
+    "set_window_dim win_id: " .. win_id .. " " .. (dim and "on" or "off")
+  )
   local opacity = dim and (100 - config.values.opacity) or 100
   local overlay = state.overlays[win_id]
   if overlay then
@@ -80,26 +79,34 @@ local function win_config(win_id)
 end
 
 local function create_overlay(win_id)
-  if state.overlays[win_id] and not window_exists(win_id) then
+  if vim.api.nvim_win_get_config(win_id)["relative"] ~= "" then
     return
   end
 
-  if vim.api.nvim_win_get_config(win_id)["relative"] == "" then
-    local window = {}
-    window.config = win_config(win_id)
-    window.buf_id = vim.api.nvim_create_buf(false, true)
-    window.overlay_id = vim.api.nvim_open_win(
-      window.buf_id,
-      false,
-      window.config
-    )
+  local window = {}
+  window.config = win_config(win_id)
+  window.buf_id = vim.api.nvim_create_buf(false, true)
+  window.overlay_id = vim.api.nvim_open_win(window.buf_id, false, window.config)
 
-    log.trace(
-      "create_overlay win_id: " .. win_id .. "overlay_id: " .. window.overlay_id
-    )
-    state.overlays[win_id] = window
-    set_window_dim(win_id, true)
+  log.trace(
+    "create_overlay win_id: " .. win_id .. "overlay_id: " .. window.overlay_id
+  )
+  state.overlays[win_id] = window
+  set_window_dim(win_id, true)
+end
+
+local function new_overlay(win_id)
+  if state.overlays[win_id] then
+    return
   end
+  create_overlay(win_id)
+end
+
+local function redo_overlay(win_id)
+  if state.overlays[win_id] and not window_exists(win_id) then
+    return
+  end
+  create_overlay(win_id)
 end
 
 local function get_overlayed_win_id(overlay_id)
@@ -117,18 +124,11 @@ function M.init_highlight()
   vim.cmd("hi " .. HI_DIMMER .. " gui='nocombine' guibg=" .. dim_color)
 end
 
-function M.undim_window_all()
-  log.trace("undim_window_all")
-  for win_id, _ in pairs(state.overlays) do
-    set_window_dim(win_id, false)
-  end
-end
-
 function M.win_enter()
   log.trace("win_enter")
   local win_id = vim.api.nvim_get_current_win()
 
-  create_overlay(win_id)
+  new_overlay(win_id)
   set_window_dim(win_id, false)
   dim_others(win_id)
 end
@@ -140,9 +140,11 @@ function M.win_close(win_id)
     log.trace("win_close - no overlay win_id: " .. win_id)
     local overlayed_id = get_overlayed_win_id(win_id)
     if overlayed_id ~= -1 then
-      create_overlay(overlayed_id)
+      redo_overlay(overlayed_id)
+      set_window_dim(overlayed_id, false)
+    else
+      M.win_enter()
     end
-    set_window_dim(overlayed_id, false)
   else
     vim.api.nvim_win_close(overlay.overlay_id, false)
     log.trace(
