@@ -15,12 +15,11 @@ end
 
 local function redraw(_, win_id, _, _, _)
   local overlay = state.overlays[win_id]
-  if not overlay then
+  if not overlay or not state.active then
     return
   end
   ui.win_resize(win_id)
 end
-
 
 function M.init_events()
   init_augroup()
